@@ -1,8 +1,7 @@
 ## Files
-Analysis R Script  [R Script Link](https://github.com/A1exanderAlexeyuk/courseraDS/run_analysis.R "run_analysis.R")
-Tidy Data Set |  Clean Data Set |  [Data Set Link](https://github.com/A1exanderAlexeyuk/courseraDS/tidyData.txt "tidyData.txt")
-Github Repo [Repo Link](https://github.com/A1exanderAlexeyuk/courseraDS/tidyData.txt "tidyData.txt")
-Cookbook [Repo Link](https://github.com/A1exanderAlexeyuk/courseraDS/CodeBook.md "CodeBook.md")
+Analysis R Script  [R Script Link](https://github.com/A1exanderAlexeyuk/courseraDS/blob/main/run_analysis.R "run_analysis.R")
+Tidy Data Set  [Data Set Link](https://github.com/A1exanderAlexeyuk/courseraDS/blob/main/tidyData.txt "tidyData.txt")
+Cookbook [Repo Link](https://github.com/A1exanderAlexeyuk/courseraDS/blob/main/CodeBook.md "CodeBook.md")
 
 ## Script
 1. Download and unzip the data.

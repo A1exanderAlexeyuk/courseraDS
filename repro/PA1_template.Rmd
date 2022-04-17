@@ -4,8 +4,6 @@ library(dplyr)
 library(lubridate)
 library(lattice)
 library(rmarkdown)
-
-
 ```
 
 ```{r, label = 'Data loading', echo = TRUE}

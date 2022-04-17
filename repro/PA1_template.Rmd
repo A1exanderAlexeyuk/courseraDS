@@ -1,0 +1,215 @@
+```{r, label = 'Loading libraries', echo = TRUE}
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(lattice)
+library(rmarkdown)
+
+
+```
+
+```{r, label = 'Data loading', echo = TRUE}
+data = read.table("activity.csv", 
+                  sep = ",",
+                  header = TRUE
+                  ) %>% 
+        mutate(date = ymd(date)) %>% 
+        na.omit() %>% 
+        mutate(day.of.the.week = weekdays(date),
+               Weekend = ifelse(day.of.the.week == "Saturday" | day.of.the.week == "Sunday", "Weekend", "Weekday")
+        )
+```
+
+
+Q:
+What is mean total number of steps taken per day?
+
+```{r, label = 'tidy', echo = TRUE}
+
+avgDataByDate = data %>%
+        group_by(date) %>% 
+        summarize(Total = sum(steps),
+                  Average = mean(steps),
+                  Median = median(steps)
+        ) %>% 
+        mutate(Group = "Original")
+
+text01 = paste("The total number of steps taken per day is stored in the table")
+text02 = paste("The average and median steps taken per day is stored in the table")
+print(text01)
+print(text02)
+
+```
+
+Assignment:
+If you do not understand the difference between a histogram and a barplot, research the difference between them. Make a histogram of the total number of steps taken each day
+```{r}
+
+hist(avgDataByDate$Total, 
+     main = "Subjects' distribution of total steps in a day",
+     breaks = 20,
+     col = "red",
+     xlab = "Total steps",
+     ylab = "Frequency", 
+     )
+
+```
+
+Question:
+What is the average daily activity pattern?
+
+```{r}
+test = data %>%
+        group_by(interval) %>% 
+        summarize(total = sum(steps),
+                  "Total Reads" = length(steps),
+                  Minimum = min(steps),
+                  Q1 = quantile(steps, 0.25),
+                  Average = mean(steps),
+                  Median = median(steps),
+                  Q3 = quantile(steps, 0.75),
+                  Maximum = max(steps))
+
+x = ggplot(NULL, aes(y = test$Average, x = test$interval))
+x + geom_line() + geom_point() +
+        labs(x = "Interval",
+             y = "Average steps",
+             title = "Average steps taken per interval across all data") +
+        theme_classic()
+
+```
+Question
+Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+```{r echo=TRUE}
+
+intervalWithMaxSteps = test %>% filter(Average == max(test$Average))
+intervalWithMaxSteps = intervalWithMaxSteps$interval
+
+text  <-  paste("The 5 minute interval with the highest average number of steps on average is", intervalWithMaxSteps)
+print(text)
+
+```
+
+Question:
+Imputing missing values
+Note that there are a number of days/intervals where there are missing values (coded as \color{red}{\verb|NA|}NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
+
+```{r echo=TRUE}
+
+rowsNA = read.table("activity.csv", 
+                  sep = ",",
+                  header = TRUE
+                  ) %>% 
+        filter_all(any_vars(is.na(.)))
+
+numOfRowsNA = dim(rowsNA)[1]
+numOfRowsNA = paste("The total number of missing values in the dataset is", numOfRowsNA)
+print(numOfRowsNA)
+
+```
+```{r echo=TRUE}
+#fill in average value for that day 
+newData = read.table("activity.csv", 
+                  sep = ",",
+                  header = TRUE
+                  ) %>% 
+        mutate(date = ymd(date))
+
+for (i in 1:length(newData$steps)) {
+        
+        if(is.na(newData$steps[i])) {
+                
+                newData$steps[i] = mean(avgDataByDate$Average)
+                
+        }
+        
+}
+
+```
+
+
+```{r echo=TRUE}
+
+avgNewDataByDate = newData %>%
+        na.omit() %>% 
+        group_by(date) %>% 
+        summarize(Total = sum(steps),
+                  Average = mean(steps),
+                  Median = median(steps)
+        ) %>% 
+        mutate(Group = "Altered")
+
+hist(avgNewDataByDate$Total, 
+     main = "Subjects' distribution of total steps in a day",
+     breaks = 20,
+     col = "red",
+     xlab = "Total steps",
+     ylab = "Frequency", 
+     )
+
+
+compare = bind_rows(avgNewDataByDate, avgDataByDate)
+
+x = ggplot(compare, aes(y = Average, x = date))
+
+x + geom_line() + 
+        geom_point() + 
+        facet_wrap(Group ~ ., nrow = 2, dir ="v") +
+        theme_classic() +
+        labs(x = "Date",
+             y = "Average steps") 
+
+y = ggplot(compare, aes(y = Median, x = date))
+
+y + geom_line() + 
+        geom_point() + 
+        facet_wrap(Group ~ ., nrow = 2, dir ="v") +
+        theme_classic() +
+        labs(x = "Date",
+             y = "Average steps") 
+
+text <- paste("The impact of replacing values with the overall mean of steps does not impact the distribution or average significantly by eye; however, the median values on average could be changed significantly")
+
+print(text)
+
+```
+
+Are there differences in activity patterns between weekdays and weekends?
+For this part the \color{red}{\verb|weekdays()|}weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+
+Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "l"|}type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+
+```{r echo=TRUE}
+test = data %>%
+        na.omit() %>% 
+        group_by(interval, Weekend) %>% 
+        summarize(total = sum(steps),
+                  "Total Reads" = length(steps),
+                  Minimum = min(steps),
+                  Q1 = quantile(steps, 0.25),
+                  Average = mean(steps),
+                  Median = median(steps),
+                  Q3 = quantile(steps, 0.75),
+                  Maximum = max(steps))
+
+x = ggplot(test, aes(y = Average, x = interval))
+
+x + geom_line() + 
+        geom_point() + 
+        facet_wrap(Weekend ~ ., nrow = 2, dir ="v") +
+        theme_classic() +
+        labs(x = "Interval",
+             y = "Average steps",
+             title = "Average steps taken per interval by day of the week") 
+
+text = paste("Based on the graph on weekdays activity starts at earlier intervals and has a pronounced peak, where on weekends activity starts at later intervals and has probabaly a larger average value of peaks")
+
+print(text)
+
+```
+
+
+
